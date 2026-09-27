@@ -1,0 +1,126 @@
+/* Стопка — кнопка на превью */
+
+.stopka-btn {
+  /* светлая тема YouTube */
+  --stopka-bg: rgba(255, 255, 255, 0.94);
+  --stopka-fg: #0f0f0f;
+  --stopka-line: rgba(0, 0, 0, 0.12);
+  --stopka-bg-on: #0f0f0f;
+  --stopka-fg-on: #ffffff;
+
+  position: absolute;
+  bottom: 20px;
+  left: 8px;
+  z-index: 60;
+  width: 28px;
+  height: 28px;
+  padding: 0;
+  margin: 0;
+  border: 1px solid var(--stopka-line);
+  border-radius: 999px;
+  background: var(--stopka-bg);
+  -webkit-backdrop-filter: blur(3px);
+  backdrop-filter: blur(3px);
+  color: var(--stopka-fg);
+  cursor: pointer;
+  opacity: 0.92;
+  transition: opacity 120ms ease, background 120ms ease, color 120ms ease;
+  display: grid;
+  place-items: center;
+}
+
+/* тёмная тема YouTube ставит атрибут dark на <html> */
+html[dark] .stopka-btn,
+ytd-app[dark] .stopka-btn {
+  --stopka-bg: rgba(20, 20, 20, 0.9);
+  --stopka-fg: #f1f1f1;
+  --stopka-line: rgba(255, 255, 255, 0.18);
+  --stopka-bg-on: #f1f1f1;
+  --stopka-fg-on: #0f0f0f;
+}
+
+a:hover > .stopka-btn,
+.stopka-btn:hover,
+.stopka-btn:focus-visible,
+.stopka-btn.is-saved {
+  opacity: 1;
+}
+
+.stopka-btn:hover {
+  background: var(--stopka-bg-on);
+  color: var(--stopka-fg-on);
+  border-color: transparent;
+}
+
+.stopka-btn:focus-visible {
+  outline: 2px solid var(--stopka-fg);
+  outline-offset: 2px;
+}
+
+/* Сохранённое видео: тот же кружок по теме, но с заметной обводкой
+   и галочкой. Полная инверсия давала белое пятно на тёмном YouTube. */
+.stopka-btn.is-saved {
+  background: var(--stopka-bg);
+  color: var(--stopka-fg);
+  border-color: var(--stopka-fg);
+}
+
+/* Наведение на сохранённое — инверсия: видно, что нажатие уберёт из стопки. */
+.stopka-btn.is-saved:hover {
+  background: var(--stopka-bg-on);
+  color: var(--stopka-fg-on);
+  border-color: transparent;
+}
+
+.stopka-btn svg {
+  width: 16px;
+  height: 16px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.stopka-btn .stopka-check {
+  display: none;
+}
+
+.stopka-btn.is-saved .stopka-plus {
+  display: none;
+}
+
+.stopka-btn.is-saved .stopka-check {
+  display: block;
+}
+
+.stopka-btn.is-pop {
+  animation: stopka-pop 220ms ease;
+}
+
+@keyframes stopka-pop {
+  40% {
+    transform: scale(1.18);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .stopka-btn,
+  .stopka-btn.is-pop {
+    transition: none;
+    animation: none;
+  }
+}
+
+/* Кнопка на самой странице видео — рядом с заголовком, видна всегда */
+
+.stopka-btn.stopka-btn-watch {
+  position: relative;
+  bottom: auto;
+  left: auto;
+  display: inline-grid;
+  vertical-align: middle;
+  margin-left: 10px;
+  opacity: 1;
+  flex: 0 0 auto;
+}

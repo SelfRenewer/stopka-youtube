@@ -1,0 +1,5 @@
+.DS_Store
+*.zip
+
+# Сгенерированный Xcode-проект: safari/build.sh пересоздаёт его с нуля
+/safari/project/

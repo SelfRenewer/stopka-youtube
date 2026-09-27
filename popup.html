@@ -1,0 +1,33 @@
+<!doctype html>
+<html lang="ru">
+  <head>
+    <meta charset="utf-8" />
+    <link rel="stylesheet" href="popup.css" />
+    <title>Стопка</title>
+  </head>
+  <body>
+    <header class="head">
+      <p class="eyebrow">Стопка</p>
+      <p class="count"><span class="mark" id="count">—</span></p>
+    </header>
+
+    <div class="bar">
+      <button type="button" id="copy" class="btn">Скопировать ссылки</button>
+      <button type="button" id="clear" class="btn btn-quiet">Очистить</button>
+    </div>
+
+    <label class="filter" id="filter-wrap" hidden>
+      <input type="search" id="filter" placeholder="Поиск по названию" autocomplete="off" />
+    </label>
+
+    <ol class="list" id="list"></ol>
+
+    <p class="empty" id="empty" hidden>
+      Пусто. Нажми <b>＋</b> в углу превью видео на YouTube — оно окажется здесь.
+    </p>
+
+    <p class="toast" id="toast" role="status" aria-live="polite"></p>
+
+    <script src="popup.js"></script>
+  </body>
+</html>
