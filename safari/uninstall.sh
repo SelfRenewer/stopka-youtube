@@ -1,23 +1,22 @@
 #!/bin/bash
-# Стопка: полный откат установки для Safari.
+# Стопка: удаление версии для Safari.
 #
-#   ./uninstall.sh                 — снести агента, .app и логи
-#   ./uninstall.sh --reset-safari  — плюс снять «функции для веб-разработчиков»
-#   ./uninstall.sh -y              — без вопроса
+#   ./safari/uninstall.sh      — снести приложение с расширением
+#   ./safari/uninstall.sh -y   — без вопроса
+#
+# Заодно убирает следы старых установок со сторожем (LaunchAgent и его лог),
+# если они остались с тех пор, как сборка была неподписанной.
 set -euo pipefail
 
-LABEL="com.stopka.youtube.keeper"
 APP_NAME="Стопка"
-SAFARI_DIR="$(cd "$(dirname "$0")" && pwd)"
-PLIST="$HOME/Library/LaunchAgents/$LABEL.plist"
-LOG="$HOME/Library/Logs/stopka-keeper.log"
 INSTALLED="/Applications/$APP_NAME.app"
+LEGACY_LABEL="com.stopka.youtube.keeper"
+LEGACY_PLIST="$HOME/Library/LaunchAgents/$LEGACY_LABEL.plist"
+LEGACY_LOG="$HOME/Library/Logs/stopka-keeper.log"
 
-RESET_SAFARI=0
 ASSUME_YES=0
 for a in "$@"; do
   case "$a" in
-    --reset-safari) RESET_SAFARI=1 ;;
     -y|--yes) ASSUME_YES=1 ;;
     *) echo "Неизвестный ключ: $a" >&2; exit 2 ;;
   esac
@@ -26,10 +25,9 @@ done
 # Каждая проверка с `|| true`: при set -e несработавшее `[ ... ] && echo`
 # возвращает 1 и роняет скрипт ещё до подтверждения.
 echo "Будет удалено:"
-[ -f "$PLIST" ]     && echo "  LaunchAgent  $PLIST"     || true
-[ -d "$INSTALLED" ] && echo "  приложение   $INSTALLED" || true
-[ -f "$LOG" ]       && echo "  лог          $LOG"       || true
-[ "$RESET_SAFARI" -eq 1 ] && echo "  плюс снимется галочка «функции для веб-разработчиков» в Safari" || true
+[ -d "$INSTALLED" ]    && echo "  приложение    $INSTALLED"    || true
+[ -f "$LEGACY_PLIST" ] && echo "  старый сторож $LEGACY_PLIST" || true
+[ -f "$LEGACY_LOG" ]   && echo "  его лог       $LEGACY_LOG"   || true
 echo "Не трогается: исходники расширения и папка safari/project."
 
 if [ "$ASSUME_YES" -eq 0 ]; then
@@ -37,46 +35,28 @@ if [ "$ASSUME_YES" -eq 0 ]; then
   case "$ans" in y|Y|yes|да) ;; *) echo "Отменено."; exit 0 ;; esac
 fi
 
-if [ "$RESET_SAFARI" -eq 1 ]; then
-  if pgrep -qx Safari; then
-    echo "→ Снимаю галочку в настройках Safari"
-    osascript "$SAFARI_DIR/src/restore-webdev.applescript" || \
-      echo "  не вышло — сними вручную: Настройки → Дополнения"
-  else
-    echo "→ Safari не запущен, галочку не трогаю (сними вручную: Настройки → Дополнения)"
-  fi
+if [ -f "$LEGACY_PLIST" ] || launchctl print "gui/$UID/$LEGACY_LABEL" >/dev/null 2>&1; then
+  echo "→ Выгружаю старого сторожа"
+  launchctl bootout "gui/$UID/$LEGACY_LABEL" 2>/dev/null || true
+  rm -f "$LEGACY_PLIST" "$LEGACY_LOG"
 fi
-
-echo "→ Выгружаю агента"
-launchctl bootout "gui/$UID/$LABEL" 2>/dev/null || true
-pkill -f "$SAFARI_DIR/src/watcher.sh" 2>/dev/null || true
 
 # Снимаем регистрацию до удаления: после rm путь к appex уже не существует
 # и pluginkit ничего не найдёт.
 echo "→ Снимаю регистрацию расширения"
 pluginkit -r "$INSTALLED/Contents/PlugIns/$APP_NAME Extension.appex" 2>/dev/null || true
 
-echo "→ Удаляю файлы"
-rm -f "$PLIST"
+echo "→ Удаляю приложение"
 rm -rf "$INSTALLED"
-rm -f "$LOG"
 
 echo "→ Проверка"
-launchctl print "gui/$UID/$LABEL" >/dev/null 2>&1 && echo "  ВНИМАНИЕ: агент всё ещё в launchd" || echo "  агента в launchd нет"
-[ -e "$PLIST" ]     && echo "  ВНИМАНИЕ: plist на месте"      || echo "  plist удалён"
-[ -e "$INSTALLED" ] && echo "  ВНИМАНИЕ: приложение на месте" || echo "  приложение удалено"
-pgrep -f "watcher.sh" >/dev/null 2>&1 && echo "  ВНИМАНИЕ: сторож ещё жив" || echo "  сторож не запущен"
+[ -e "$INSTALLED" ]    && echo "  ВНИМАНИЕ: приложение на месте" || echo "  приложение удалено"
+[ -e "$LEGACY_PLIST" ] && echo "  ВНИМАНИЕ: plist сторожа на месте" || echo "  сторожа нет"
 
 cat <<'HINT'
 
-Осталось то, что система хранит у себя и скрипт удалить не может —
-чистится только руками, если записи там есть:
-
-  Системные настройки → Конфиденциальность и безопасность
-    → Универсальный доступ — убрать StopkaKeeper, applet, Стопка Хранитель
-      и /usr/bin/osascript, если добавляли
-    → Автоматизация — там же
-
-«Разрешить неподписанные расширения» откатывать не нужно: этот флаг
-живёт только в памяти Safari и гаснет сам при следующем запуске.
+Если раньше стояла неподписанная версия, в Safari могла остаться включённой
+галочка «Показывать функции для веб-разработчиков» (Настройки → Дополнения),
+а в Системных настройках → Конфиденциальность и безопасность →
+Универсальный доступ — /usr/bin/osascript. Это убирается только руками.
 HINT

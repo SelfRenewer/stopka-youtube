@@ -1,7 +1,10 @@
 #!/bin/bash
 # Стопка → приложение-обёртка с расширением для Safari.
-# Конвертирует, собирает ad-hoc подписью и ставит в /Applications.
+# Конвертирует, подписывает сертификатом разработчика и ставит в /Applications.
 # Запуск: ./safari/build.sh
+#
+# Нужен Apple ID с Apple Developer Program в Xcode → Settings → Accounts.
+# Team ID берётся оттуда сам; если команд несколько — задай STOPKA_TEAM_ID.
 set -euo pipefail
 
 APP_NAME="Стопка"
@@ -22,6 +25,30 @@ if [ -z "$XCODE" ]; then
 fi
 export DEVELOPER_DIR="$XCODE/Contents/Developer"
 echo "→ Xcode: $XCODE"
+
+# Команда разработчика. В репозиторий не зашита: берём из Xcode, где
+# пользователь вошёл своим Apple ID. Берём только платные команды: по
+# документации Apple подпись сертификатом разработчика — для участников
+# Developer Program. Бесплатную Personal Team не проверяли.
+TEAM_ID="${STOPKA_TEAM_ID:-}"
+if [ -z "$TEAM_ID" ]; then
+  TEAMS="$(defaults read com.apple.dt.Xcode IDEProvisioningTeamByIdentifier 2>/dev/null | awk '
+    /isFreeProvisioningTeam = 0;/ { paid = 1 }
+    /teamID = / { id = $3; sub(/;$/, "", id) }
+    /}/ { if (paid && id != "") print id; paid = 0; id = "" }
+  ' | sort -u || true)"
+  case "$(printf '%s' "$TEAMS" | grep -c .)" in
+    1) TEAM_ID="$TEAMS" ;;
+    0) echo "В Xcode нет платной команды разработчика." >&2
+       echo "Xcode → Settings → Accounts → + → Apple ID с Apple Developer Program." >&2
+       exit 1 ;;
+    *) echo "В Xcode несколько команд, выбери одну:" >&2
+       printf '  %s\n' $TEAMS >&2
+       echo "STOPKA_TEAM_ID=<ID> ./safari/build.sh" >&2
+       exit 1 ;;
+  esac
+fi
+echo "→ Команда: $TEAM_ID"
 
 # 1. Стейджинг: конвертер копирует папку целиком, поэтому даём ему
 #    чистую копию только с файлами расширения.
@@ -62,20 +89,23 @@ if grep -q 'PRODUCT_BUNDLE_IDENTIFIER = "[a-zA-Z.]*-\{2,\}"' "$PROJ/project.pbxp
     "$PROJ/project.pbxproj"
 fi
 
-# 3. Сборка. Учётки Apple Developer нет, подписываем ad-hoc.
-#    Safari примет её при включённом «Разрешить неподписанные расширения».
+# 3. Сборка с подписью «Apple Development». Расширение с сертификатом
+#    разработчика Safari грузит сам — без «Разрешить неподписанные
+#    расширения». Сертификат и профиль Xcode выпустит при первом запуске
+#    (-allowProvisioningUpdates), Мак зарегистрирует как устройство.
 #    derivedData во временной папке: иначе Safari видит два одинаковых
 #    расширения — одно из сборки, второе из /Applications.
 DERIVED="$(mktemp -d)"
 trap 'rm -rf "$STAGE_ROOT" "$DERIVED"' EXIT
-echo "→ Собираю (Release, ad-hoc)"
+echo "→ Собираю (Release, подпись команды $TEAM_ID)"
 xcodebuild -project "$PROJ" \
   -scheme "$APP_NAME" \
   -configuration Release \
   -derivedDataPath "$DERIVED" \
-  CODE_SIGN_IDENTITY="-" \
-  CODE_SIGN_STYLE=Manual \
-  DEVELOPMENT_TEAM="" \
+  -allowProvisioningUpdates \
+  -allowProvisioningDeviceRegistration \
+  CODE_SIGN_STYLE=Automatic \
+  DEVELOPMENT_TEAM="$TEAM_ID" \
   -quiet
 
 APP="$(find "$DERIVED/Build/Products" -maxdepth 2 -name '*.app' | head -1)"
@@ -87,16 +117,16 @@ echo "→ Ставлю в $INSTALLED"
 rm -rf "$INSTALLED"
 ditto "$APP" "$INSTALLED"
 
-# Safari перечисляет неподписанные расширения только в момент регистрации
-# appex и только при включённом флаге. Поэтому порядок именно такой:
-# сначала флаг, потом перерегистрация, потом запуск контейнера.
-if pgrep -qx Safari; then
-  echo "→ Включаю «Разрешить неподписанные расширения»"
-  status="$(/usr/bin/osascript "$SAFARI_DIR/src/unsigned-extensions.applescript" 2>&1)"
-  echo "   $status"
-else
-  echo "→ Safari не запущен, флаг включит сторож при следующем старте"
+# Подпись проверяем до регистрации: ad-hoc или чужая команда означали бы,
+# что Safari снова потребует галку про неподписанные расширения.
+# `|| true`: при pipefail упавший codesign уронил бы скрипт молча, без
+# сообщения ниже. То же выше у разбора команд: нет ключа — нет аккаунта.
+SIGNED_TEAM="$(codesign -dv "$INSTALLED/Contents/PlugIns/$APP_NAME Extension.appex" 2>&1 | sed -n 's/^TeamIdentifier=//p' || true)"
+if [ "$SIGNED_TEAM" != "$TEAM_ID" ]; then
+  echo "Расширение подписано не той командой: '$SIGNED_TEAM' вместо '$TEAM_ID'" >&2
+  exit 1
 fi
+echo "→ Подпись: команда $SIGNED_TEAM"
 
 echo "→ Регистрирую расширение"
 pluginkit -r "$INSTALLED/Contents/PlugIns/$APP_NAME Extension.appex" 2>/dev/null || true
