@@ -51,6 +51,15 @@ Safari не грузит папку с расширением напрямую �
 
 Снести: `./safari/uninstall.sh`
 
+### Mac App Store
+
+```bash
+./safari/build.sh --app-store   # пакет в safari/dist/, подпись Apple Distribution
+./safari/build.sh --upload      # то же, сразу в App Store Connect
+```
+
+Перед отправкой в App Store Connect должна быть создана запись приложения с bundle ID `com.stopka.youtube`. Тексты страницы — `safari/appstore/metadata.md` (лимиты проверяет `check-metadata.sh`), скриншоты — `safari/appstore/screenshots/`, пересобираются `shoot.py`. Политика конфиденциальности — [PRIVACY.md](PRIVACY.md).
+
 ## Если кнопка не появилась
 
 YouTube периодически меняет вёрстку. Все селекторы вынесены наверх `content.js`:

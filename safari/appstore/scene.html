@@ -1,0 +1,106 @@
+<!doctype html>
+<!-- Стопка: сцена для скриншотов App Store. Видео и каналы вымышленные.
+     Кнопки — настоящий content.css, список — настоящий popup.html.
+     Собирает shoot.py: scene.html?n=1|2|3 -->
+<html lang="ru" dark>
+<head>
+<meta charset="utf-8">
+<link rel="stylesheet" href="../../content.css">
+<style>
+  :root { --bg: #0f0f0f; --ink: #f1f1f1; --mute: #aaa; --accent: #DDF15C; }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; width: 1440px; height: 900px; overflow: hidden; }
+  body {
+    font-family: -apple-system, system-ui, "Helvetica Neue", sans-serif;
+    background: radial-gradient(1200px 700px at 20% -10%, #2a3216 0%, transparent 60%),
+                linear-gradient(160deg, #181b13 0%, #0b0c09 100%);
+    color: var(--ink);
+  }
+  header { position: absolute; left: 120px; right: 120px; top: 56px; }
+  h1 { margin: 0; font-size: 52px; line-height: 1.1; font-weight: 700; letter-spacing: -0.01em; }
+  h1 em { font-style: normal; color: var(--accent); }
+  header p { margin: 14px 0 0; font-size: 22px; color: #b8bdae; }
+
+  .window {
+    position: absolute; left: 120px; top: 236px; width: 1200px; height: 620px;
+    border-radius: 14px; background: var(--bg); overflow: hidden;
+    box-shadow: 0 30px 80px rgba(0,0,0,.55), 0 0 0 1px rgba(255,255,255,.08);
+  }
+  .toolbar {
+    height: 52px; display: flex; align-items: center; gap: 16px; padding: 0 18px;
+    background: #232323; border-bottom: 1px solid #000;
+  }
+  .lights { display: flex; gap: 8px; }
+  .lights i { width: 12px; height: 12px; border-radius: 50%; display: block; }
+  .lights i:nth-child(1) { background: #ff5f57; } .lights i:nth-child(2) { background: #febc2e; } .lights i:nth-child(3) { background: #28c840; }
+  .address {
+    flex: 1; max-width: 560px; margin: 0 auto; height: 32px; border-radius: 8px;
+    background: #3a3a3a; color: #d6d6d6; font-size: 14px;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .ext { width: 26px; height: 26px; border-radius: 6px; }
+  .ext.active { box-shadow: 0 0 0 3px rgba(221,241,92,.45); }
+
+  .grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 26px 20px; padding: 26px 28px; }
+  .card { min-width: 0; }
+  a.thumb { display: block; position: relative; aspect-ratio: 16/9; border-radius: 12px; overflow: hidden; }
+  a.thumb img { width: 100%; height: 100%; display: block; }
+  .dur {
+    position: absolute; right: 8px; bottom: 8px; padding: 2px 6px; border-radius: 4px;
+    background: rgba(0,0,0,.8); font-size: 12px; font-weight: 600;
+  }
+  .title { margin: 10px 0 4px; font-size: 16px; font-weight: 600; line-height: 1.3; }
+  .meta { font-size: 13px; color: var(--mute); }
+
+  .popup {
+    position: absolute; top: 290px; right: 128px; width: 360px; height: 468px;
+    border: 0; border-radius: 12px; background: #0f0f0f;
+    box-shadow: 0 24px 60px rgba(0,0,0,.6), 0 0 0 1px rgba(255,255,255,.1);
+  }
+</style>
+</head>
+<body>
+<header><h1 id="h"></h1><p id="sub"></p></header>
+<div class="window">
+  <div class="toolbar">
+    <div class="lights"><i></i><i></i><i></i></div>
+    <div class="address">youtube.com</div>
+    <img class="ext" id="ext" src="../app/Icon.png" alt="">
+  </div>
+  <div class="grid" id="grid"></div>
+</div>
+<script src="data.js"></script>
+<script>
+  const n = Number(new URLSearchParams(location.search).get('n') || 1);
+  const scenes = {
+    1: { h: 'Нажми <em>＋</em> — и видео отложено', sub: 'Кнопка на каждом превью: на главной, в поиске, в рекомендациях, в плейлистах.', saved: [1], popup: false },
+    2: { h: 'Всё отложенное — <em>в одном списке</em>', sub: 'Нажми значок «Стопки» на панели Safari. Поиск по названию, удаление по одному.', saved: [0, 1, 3, 4], popup: true },
+    3: { h: 'Все ссылки — <em>в буфер</em> одним нажатием', sub: 'Список остаётся только на твоём Маке. Без аккаунтов, сервера и аналитики.', saved: [0, 1, 3, 4], popup: true, toast: true },
+  };
+  const s = scenes[n];
+  document.getElementById('h').innerHTML = s.h;
+  document.getElementById('sub').textContent = s.sub;
+
+  // Разметка кнопки — та же, что строит content.js (makeButton).
+  const btn = (saved) =>
+    `<button type="button" class="stopka-btn${saved ? ' is-saved' : ''}">` +
+    '<svg viewBox="0 0 20 20" aria-hidden="true"><path class="stopka-plus" d="M10 4.5v11M4.5 10h11"/>' +
+    '<path class="stopka-check" d="M4.8 10.4l3.4 3.4 7-7.6"/></svg></button>';
+
+  document.getElementById('grid').innerHTML = VIDEOS.map((v, i) => `
+    <div class="card">
+      <a class="thumb"><img src="${thumb(i)}" alt="">${btn(s.saved.includes(i))}<span class="dur">${v.dur}</span></a>
+      <div class="title">${v.title}</div>
+      <div class="meta">${v.channel} · ${v.views}</div>
+    </div>`).join('');
+
+  if (s.popup) {
+    document.getElementById('ext').classList.add('active');
+    const f = document.createElement('iframe');
+    f.className = 'popup';
+    f.src = '../../popup.html' + (s.toast ? '#toast' : '');
+    document.body.appendChild(f);
+  }
+</script>
+</body>
+</html>

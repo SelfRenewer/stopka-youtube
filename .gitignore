@@ -3,3 +3,6 @@
 
 # Сгенерированный Xcode-проект: safari/build.sh пересоздаёт его с нуля
 /safari/project/
+
+# Пакеты для App Store, собирает safari/build.sh --app-store
+/safari/dist/
