@@ -169,6 +169,17 @@ PLIST="$APP_SRC/Info.plist"
 /usr/libexec/PlistBuddy -c "Add :LSApplicationCategoryType string $CATEGORY" "$PLIST"
 /usr/libexec/PlistBuddy -c "Add :ITSAppUsesNonExemptEncryption bool false" "$PLIST"
 
+# Конвертер ставит на созданные файлы атрибут карантина (com.apple.quarantine),
+# а cp при перезаписи его не снимает. App Store такой пакет отклоняет
+# (ошибка 91109: Invalid package contents), поэтому снимаем со всего проекта.
+strip_quarantine() {
+  find "$1" -print0 | xargs -0 xattr -d com.apple.quarantine 2>/dev/null || true
+}
+has_quarantine() {
+  find "$1" -print0 | xargs -0 xattr -l 2>/dev/null | grep -q 'com.apple.quarantine'
+}
+strip_quarantine "$PROJECT_DIR"
+
 SETTINGS=(
   CODE_SIGN_STYLE=Automatic
   DEVELOPMENT_TEAM="$TEAM_ID"
@@ -190,6 +201,15 @@ if [ "$MODE" != install ]; then
     -allowProvisioningUpdates \
     "${SETTINGS[@]}" \
     -quiet
+
+  # Атрибут не входит в подпись, снимать его после сборки безопасно.
+  # Проверяем до экспорта: в режиме --upload пакет потом уже не посмотреть.
+  strip_quarantine "$ARCHIVE"
+  if has_quarantine "$ARCHIVE"; then
+    echo "В архиве остались файлы с com.apple.quarantine — App Store их не примет" >&2
+    exit 1
+  fi
+  echo "→ Карантина в архиве нет"
 
   DESTINATION=export
   [ "$MODE" = upload ] && DESTINATION=upload
@@ -226,6 +246,13 @@ PLISTEOF
     [ -n "$PKG" ] || { echo "Пакет не появился в $DIST" >&2; exit 1; }
     echo "→ Пакет: $PKG"
     pkgutil --check-signature "$PKG" | sed -n '1,4p'
+    PKG_X="$DERIVED/pkg-check"
+    pkgutil --expand-full "$PKG" "$PKG_X" >/dev/null
+    if has_quarantine "$PKG_X"; then
+      echo "В пакете есть файлы с com.apple.quarantine — App Store его отклонит" >&2
+      exit 1
+    fi
+    echo "→ Карантина в пакете нет"
     echo "Отправить его: ./safari/build.sh --upload"
   else
     echo "→ Отправлено. Сборка появится в App Store Connect → TestFlight через несколько минут."
