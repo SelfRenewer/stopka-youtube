@@ -1,8 +1,8 @@
 <!doctype html>
 <!-- Стопка: сцена для скриншотов App Store. Видео и каналы вымышленные.
      Кнопки — настоящий content.css, список — настоящий popup.html.
-     Собирает shoot.py: scene.html?n=1|2|3 -->
-<html lang="ru" dark>
+     Собирает shoot.py: scene.html?n=1|2|3&l=en|ru -->
+<html dark>
 <head>
 <meta charset="utf-8">
 <link rel="stylesheet" href="../../content.css">
@@ -69,15 +69,29 @@
   </div>
   <div class="grid" id="grid"></div>
 </div>
+<script>const LANG = new URLSearchParams(location.search).get('l') || 'en'; document.documentElement.lang = LANG;</script>
 <script src="data.js"></script>
 <script>
   const n = Number(new URLSearchParams(location.search).get('n') || 1);
+  const TEXT = {
+    en: {
+      1: ['Click <em>＋</em> — saved to your list', 'A button on every thumbnail: home, search, recommendations, playlists.'],
+      2: ['Everything you saved — <em>in one list</em>', 'Click the Stopka icon in the Safari toolbar. Search by title, remove one by one.'],
+      3: ['All links — <em>to the clipboard</em> in one click', 'The list stays on your Mac. No accounts, no servers, no analytics.'],
+    },
+    ru: {
+      1: ['Нажми <em>＋</em> — и видео в списке', 'Кнопка на каждом превью: на главной, в поиске, в рекомендациях, в плейлистах.'],
+      2: ['Всё отложенное — <em>в одном списке</em>', 'Нажми значок «Стопки» на панели Safari. Поиск по названию, удаление по одному.'],
+      3: ['Все ссылки — <em>в буфер</em> одним нажатием', 'Список остаётся только на твоём Маке. Без аккаунтов, сервера и аналитики.'],
+    },
+  };
   const scenes = {
-    1: { h: 'Нажми <em>＋</em> — и видео отложено', sub: 'Кнопка на каждом превью: на главной, в поиске, в рекомендациях, в плейлистах.', saved: [1], popup: false },
-    2: { h: 'Всё отложенное — <em>в одном списке</em>', sub: 'Нажми значок «Стопки» на панели Safari. Поиск по названию, удаление по одному.', saved: [0, 1, 3, 4], popup: true },
-    3: { h: 'Все ссылки — <em>в буфер</em> одним нажатием', sub: 'Список остаётся только на твоём Маке. Без аккаунтов, сервера и аналитики.', saved: [0, 1, 3, 4], popup: true, toast: true },
+    1: { saved: [1], popup: false },
+    2: { saved: [0, 1, 3, 4], popup: true },
+    3: { saved: [0, 1, 3, 4], popup: true, toast: true },
   };
   const s = scenes[n];
+  [s.h, s.sub] = TEXT[LANG][n];
   document.getElementById('h').innerHTML = s.h;
   document.getElementById('sub').textContent = s.sub;
 

@@ -10,7 +10,7 @@ perl -CSD -Mutf8 -ne '
     if ($name eq "Ключевые слова") { for (split /,/, $t) {
       if (length($_) <= 2 || /^\s|\s$/) { print "  плохое слово: «$_»\n"; $bad++ } } }
     undef $name }
-  if (/^## (.+)/) { flush(); $pending = $1; next }
+  if (/^#{1,3} (.+)/) { flush(); $pending = $1; next }
   if (defined $pending && /<!-- limit:(\d+) -->/) { $name = $pending; $limit = $1; $text = ""; undef $pending; next }
   $text .= $_ if defined $name;
   END { flush(); exit($bad ? 1 : 0) }

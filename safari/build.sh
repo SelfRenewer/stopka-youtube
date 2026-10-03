@@ -19,7 +19,10 @@ for a in "$@"; do
   esac
 done
 
-APP_NAME="Стопка"
+APP_NAME="Stopka"
+RU_NAME="Стопка"
+# До перехода на латиницу приложение называлось так — его убираем при установке.
+LEGACY_APP="/Applications/Стопка.app"
 BUNDLE_ID="com.stopka.youtube"
 PRIVACY_URL="https://github.com/SelfRenewer/stopka-youtube/blob/main/PRIVACY.md"
 CATEGORY="public.app-category.productivity"
@@ -44,7 +47,7 @@ BUILD_NUMBER="$(date -u +%Y%m%d.%H%M)"
 
 # В бандл расширения уезжает ровно этот список. Всё остальное из папки
 # проекта (README, CLAUDE.md, сам safari/, .DS_Store) внутрь не попадает.
-EXT_FILES=(manifest.json content.js content.css popup.html popup.css popup.js icons)
+EXT_FILES=(manifest.json _locales content.js content.css popup.html popup.css popup.js icons)
 
 XCODE="$(ls -d /Applications/Xcode*.app 2>/dev/null | head -1 || true)"
 if [ -z "$XCODE" ]; then
@@ -113,19 +116,21 @@ PROJ="$(find "$PROJECT_DIR" -maxdepth 2 -name '*.xcodeproj' | head -1)"
 APP_SRC="$(dirname "$PROJ")/$APP_NAME"
 echo "→ Проект: $PROJ"
 
-# Конвертер не умеет делать bundle id из кириллического имени: у приложения
-# выходит com.stopka.------ и сборка падает на проверке префикса.
-if grep -q 'PRODUCT_BUNDLE_IDENTIFIER = "[a-zA-Z.]*-\{2,\}"' "$PROJ/project.pbxproj"; then
-  echo "→ Чиню bundle id приложения на $BUNDLE_ID"
-  perl -i -pe 's/PRODUCT_BUNDLE_IDENTIFIER = "[a-zA-Z.]*-{2,}";/PRODUCT_BUNDLE_IDENTIFIER = '"$BUNDLE_ID"';/g' \
-    "$PROJ/project.pbxproj"
-fi
+# Конвертер собирает ID приложения из префикса и имени приложения
+# (com.stopka.Stopka, а для кириллицы — com.stopka.------), а ID расширения
+# берёт как есть. Сборка падает на проверке префикса, поэтому ID приложения
+# выставляем явно — всем записям, кроме расширения.
+perl -i -pe 's/(PRODUCT_BUNDLE_IDENTIFIER = )(?!\Q'"$BUNDLE_ID"'.Extension\E;)[^;]+;/$1'"$BUNDLE_ID"';/g' \
+  "$PROJ/project.pbxproj"
 
-# 3. Контейнер: наши файлы поверх сгенерированных — русский текст, ссылка
-#    на политику конфиденциальности (App Review 5.1.1 требует её и внутри
-#    приложения) и чёткая иконка. Исходники лежат в safari/app/.
+# 3. Контейнер: наши файлы поверх сгенерированных — окно на английском
+#    (Base) и русском (ru), ссылка на политику конфиденциальности (App Review
+#    5.1.1 требует её и внутри приложения), чёткая иконка. Исходники — safari/app/.
 echo "→ Накладываю safari/app/ на приложение-контейнер"
-cp "$OVERLAY/Main.html"  "$APP_SRC/Resources/Base.lproj/Main.html"
+cp "$OVERLAY/en/Main.html" "$APP_SRC/Resources/Base.lproj/Main.html"
+mkdir -p "$APP_SRC/Resources/ru.lproj" "$APP_SRC/ru.lproj"
+cp "$OVERLAY/ru/Main.html" "$APP_SRC/Resources/ru.lproj/Main.html"
+cp "$OVERLAY/ru/InfoPlist.strings" "$APP_SRC/ru.lproj/InfoPlist.strings"
 cp "$OVERLAY/Script.js" "$OVERLAY/Style.css" "$OVERLAY/Icon.png" "$APP_SRC/Resources/"
 sed -e "s|__EXTENSION_BUNDLE_ID__|$BUNDLE_ID.Extension|" \
     -e "s|__PRIVACY_URL__|$PRIVACY_URL|" \
@@ -135,6 +140,28 @@ if grep -q '__[A-Z_]*__' "$APP_SRC/ViewController.swift"; then
 fi
 rm -rf "$APP_SRC/Assets.xcassets/AppIcon.appiconset"
 cp -R "$OVERLAY/AppIcon.appiconset" "$APP_SRC/Assets.xcassets/"
+
+# Меню на русском: строки берём из сгенерированного storyboard (ID у
+# элементов меню задаёт шаблон Xcode) и переводим по safari/app/ru/menu.txt.
+# Непереведённая строка не молчит — падаем, иначе меню выйдет наполовину английским.
+ibtool --generate-strings-file "$DERIVED/Main.strings" "$APP_SRC/Base.lproj/Main.storyboard"
+iconv -f UTF-16 -t UTF-8 "$DERIVED/Main.strings" | APP="$APP_NAME" perl -CSD -Mutf8 -e '
+  open my $m, "<:encoding(UTF-8)", shift or die; my %ru;
+  while (<$m>) { next if /^\s*(#|$)/; chomp; my ($en, $tr) = split / = /, $_, 2;
+                 s/\bAPP\b/$ENV{APP}/g for $en; $ru{$en} = $tr }
+  my @miss;
+  while (<STDIN>) {
+    if (/^(".*" = )"(.*)";\s*$/) { exists $ru{$2} ? ($_ = "$1\"$ru{$2}\";\n") : push @miss, $2 }
+    print;
+  }
+  die "Нет перевода меню для: @miss\n" if @miss;
+' "$OVERLAY/ru/menu.txt" > "$APP_SRC/ru.lproj/Main.strings"
+
+# Записи о ru-файлах в проекте: localize.pl правит структуру plist,
+# а не текст pbxproj. Xcode читает проект и в XML-виде.
+plutil -convert json -o - "$PROJ/project.pbxproj" \
+  | perl "$OVERLAY/localize.pl" "$APP_NAME" > "$DERIVED/project.json"
+plutil -convert xml1 "$DERIVED/project.json" -o "$PROJ/project.pbxproj"
 
 # Категория обязательна для Mac App Store. Шифрования своего нет — флаг
 # избавляет от вопроса про экспортный контроль при каждой отправке.
@@ -223,6 +250,14 @@ xcodebuild -project "$PROJ" \
 
 APP="$(find "$DERIVED/Build/Products" -maxdepth 2 -name '*.app' | head -1)"
 [ -n "$APP" ] || { echo "Приложение не собралось" >&2; exit 1; }
+
+# Старое приложение с кириллическим именем и тем же bundle ID надо убрать,
+# иначе Safari покажет две «Стопки» и обе будут вешать ＋ на превью.
+if [ -d "$LEGACY_APP" ]; then
+  echo "→ Убираю старое $LEGACY_APP"
+  pluginkit -r "$LEGACY_APP/Contents/PlugIns/$RU_NAME Extension.appex" 2>/dev/null || true
+  rm -rf "$LEGACY_APP"
+fi
 
 # Safari держит расширение по пути приложения, поэтому оно должно лежать
 # в постоянном месте, а не в папке сборки.

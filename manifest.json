@@ -1,13 +1,14 @@
 {
   "manifest_version": 3,
-  "name": "Стопка",
+  "name": "__MSG_extName__",
   "version": "1.0.0",
-  "description": "Отмечай видео на YouTube одним нажатием и забирай весь список ссылок разом.",
+  "description": "__MSG_extDescription__",
+  "default_locale": "en",
   "permissions": ["storage", "clipboardWrite"],
   "host_permissions": ["*://*.youtube.com/*"],
   "action": {
     "default_popup": "popup.html",
-    "default_title": "Стопка",
+    "default_title": "__MSG_extName__",
     "default_icon": {
       "16": "icons/icon-16.png",
       "32": "icons/icon-32.png",

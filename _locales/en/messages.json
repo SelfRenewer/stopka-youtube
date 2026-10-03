@@ -1,0 +1,119 @@
+{
+  "langCode": {
+    "message": "en",
+    "description": "Code of this locale, used for date formatting and <html lang>"
+  },
+  "extName": {
+    "message": "Stopka",
+    "description": "Extension name"
+  },
+  "extDescription": {
+    "message": "Save YouTube videos with one click and grab the whole list of links at once.",
+    "description": "Extension description in the browser's extension list"
+  },
+  "addToStack": {
+    "message": "Add to stack",
+    "description": "Tooltip of the ＋ button when the video is not saved"
+  },
+  "removeFromStack": {
+    "message": "Remove from stack",
+    "description": "Tooltip of the button when the video is saved; also the × in the list"
+  },
+  "untitledVideo": {
+    "message": "Untitled video",
+    "description": "Fallback title when the page has none"
+  },
+  "videoCountOne": {
+    "message": "$COUNT$ video",
+    "description": "Counter in the popup header, exactly one",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "videoCountMany": {
+    "message": "$COUNT$ videos",
+    "description": "Counter in the popup header, any other number",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "copyLinks": {
+    "message": "Copy links",
+    "description": "Button that copies all links"
+  },
+  "clear": {
+    "message": "Clear",
+    "description": "Button that removes all videos"
+  },
+  "confirmClear": {
+    "message": "Really clear?",
+    "description": "Clear button after the first press"
+  },
+  "searchPlaceholder": {
+    "message": "Search by title",
+    "description": "Search field placeholder"
+  },
+  "emptyBefore": {
+    "message": "Empty. Click",
+    "description": "Empty state, text before the ＋ sign"
+  },
+  "emptyAfter": {
+    "message": "in the corner of a YouTube video thumbnail and it will show up here.",
+    "description": "Empty state, text after the ＋ sign"
+  },
+  "removeItem": {
+    "message": "Remove “$TITLE$”",
+    "description": "Accessible label of the × button",
+    "placeholders": {
+      "title": {
+        "content": "$1"
+      }
+    }
+  },
+  "removed": {
+    "message": "Removed",
+    "description": "Toast after removing one video"
+  },
+  "nothingFound": {
+    "message": "Nothing found",
+    "description": "Search returned no results"
+  },
+  "listEmpty": {
+    "message": "The list is empty",
+    "description": "Toast when copying an empty list"
+  },
+  "copiedLinks": {
+    "message": "Links copied: $COUNT$",
+    "description": "Toast after copying",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "copyFailed": {
+    "message": "Couldn’t copy",
+    "description": "Toast when the clipboard refused"
+  },
+  "cleared": {
+    "message": "Stack is empty",
+    "description": "Toast after clearing"
+  },
+  "clearFailed": {
+    "message": "Couldn’t clear, try again",
+    "description": "Toast when clearing did not persist"
+  },
+  "storageFailed": {
+    "message": "Storage error: $ERROR$",
+    "description": "Toast with the browser's storage error",
+    "placeholders": {
+      "error": {
+        "content": "$1"
+      }
+    }
+  }
+}

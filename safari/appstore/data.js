@@ -1,12 +1,24 @@
 // Вымышленные видео для скриншотов. Превью рисуются SVG, без чужих картинок.
-const VIDEOS = [
-  { title: 'Как сварить идеальный рис: три способа', channel: 'Кухня без спешки', views: '214 тыс. просмотров', dur: '12:48' },
-  { title: 'Горы Алтая за 7 дней: маршрут и бюджет', channel: 'Рюкзак и карта', views: '96 тыс. просмотров', dur: '24:10' },
-  { title: 'Основы акварели для начинающих', channel: 'Тихая мастерская', views: '58 тыс. просмотров', dur: '18:32' },
-  { title: 'Почему кошки столько спят', channel: 'Наука просто', views: '1,2 млн просмотров', dur: '9:05' },
-  { title: 'Домашний сервер из старого ноутбука', channel: 'Железо дома', views: '340 тыс. просмотров', dur: '31:17' },
-  { title: 'Утренняя растяжка за 15 минут', channel: 'Спокойный ритм', views: '77 тыс. просмотров', dur: '15:00' },
-];
+// LANG задаёт shoot.py (en | ru).
+const VIDEOS_BY_LANG = {
+  en: [
+    { title: 'How to cook perfect rice: three ways', channel: 'Slow Kitchen', views: '214K views', dur: '12:48' },
+    { title: 'Altai Mountains in 7 days: route and budget', channel: 'Backpack & Map', views: '96K views', dur: '24:10' },
+    { title: 'Watercolor basics for beginners', channel: 'Quiet Studio', views: '58K views', dur: '18:32' },
+    { title: 'Why cats sleep so much', channel: 'Science Made Simple', views: '1.2M views', dur: '9:05' },
+    { title: 'A home server from an old laptop', channel: 'Hardware at Home', views: '340K views', dur: '31:17' },
+    { title: 'Morning stretch in 15 minutes', channel: 'Calm Rhythm', views: '77K views', dur: '15:00' },
+  ],
+  ru: [
+    { title: 'Как сварить идеальный рис: три способа', channel: 'Кухня без спешки', views: '214 тыс. просмотров', dur: '12:48' },
+    { title: 'Горы Алтая за 7 дней: маршрут и бюджет', channel: 'Рюкзак и карта', views: '96 тыс. просмотров', dur: '24:10' },
+    { title: 'Основы акварели для начинающих', channel: 'Тихая мастерская', views: '58 тыс. просмотров', dur: '18:32' },
+    { title: 'Почему кошки столько спят', channel: 'Наука просто', views: '1,2 млн просмотров', dur: '9:05' },
+    { title: 'Домашний сервер из старого ноутбука', channel: 'Железо дома', views: '340 тыс. просмотров', dur: '31:17' },
+    { title: 'Утренняя растяжка за 15 минут', channel: 'Спокойный ритм', views: '77 тыс. просмотров', dur: '15:00' },
+  ],
+};
+const VIDEOS = VIDEOS_BY_LANG[LANG];
 
 const PALETTES = [
   ['#f4a259', '#bc4b51', '#fff3d6'], ['#2a9d8f', '#264653', '#e9f5db'], ['#8ecae6', '#219ebc', '#ffffff'],

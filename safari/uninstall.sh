@@ -8,8 +8,11 @@
 # если они остались с тех пор, как сборка была неподписанной.
 set -euo pipefail
 
-APP_NAME="Стопка"
+APP_NAME="Stopka"
 INSTALLED="/Applications/$APP_NAME.app"
+# Прежнее имя приложения, до перехода на латиницу.
+LEGACY_APP="/Applications/Стопка.app"
+LEGACY_APPEX="$LEGACY_APP/Contents/PlugIns/Стопка Extension.appex"
 LEGACY_LABEL="com.stopka.youtube.keeper"
 LEGACY_PLIST="$HOME/Library/LaunchAgents/$LEGACY_LABEL.plist"
 LEGACY_LOG="$HOME/Library/Logs/stopka-keeper.log"
@@ -26,6 +29,7 @@ done
 # возвращает 1 и роняет скрипт ещё до подтверждения.
 echo "Будет удалено:"
 [ -d "$INSTALLED" ]    && echo "  приложение    $INSTALLED"    || true
+[ -d "$LEGACY_APP" ]   && echo "  старое        $LEGACY_APP"   || true
 [ -f "$LEGACY_PLIST" ] && echo "  старый сторож $LEGACY_PLIST" || true
 [ -f "$LEGACY_LOG" ]   && echo "  его лог       $LEGACY_LOG"   || true
 echo "Не трогается: исходники расширения и папка safari/project."
@@ -45,9 +49,10 @@ fi
 # и pluginkit ничего не найдёт.
 echo "→ Снимаю регистрацию расширения"
 pluginkit -r "$INSTALLED/Contents/PlugIns/$APP_NAME Extension.appex" 2>/dev/null || true
+pluginkit -r "$LEGACY_APPEX" 2>/dev/null || true
 
 echo "→ Удаляю приложение"
-rm -rf "$INSTALLED"
+rm -rf "$INSTALLED" "$LEGACY_APP"
 
 echo "→ Проверка"
 [ -e "$INSTALLED" ]    && echo "  ВНИМАНИЕ: приложение на месте" || echo "  приложение удалено"

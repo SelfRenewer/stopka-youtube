@@ -1,6 +1,19 @@
 /* Стопка — попап */
 
 const KEY = 'items';
+
+/* ---------- язык ---------- */
+
+// Строки — в _locales/<язык>/messages.json; язык выбирает браузер.
+const t = (key, ...subs) => chrome.i18n.getMessage(key, subs) || key;
+
+document.documentElement.lang = t('langCode');
+document.querySelectorAll('[data-i18n]').forEach((el) => {
+  el.textContent = t(el.dataset.i18n);
+});
+document.querySelectorAll('[data-i18n-placeholder]').forEach((el) => {
+  el.placeholder = t(el.dataset.i18nPlaceholder);
+});
 const $ = (id) => document.getElementById(id);
 const listEl = $('list');
 const emptyEl = $('empty');
@@ -39,7 +52,7 @@ const drop = () =>
 
 function when(ts) {
   const d = new Date(ts);
-  return d.toLocaleDateString('ru-RU', { day: '2-digit', month: 'short' });
+  return d.toLocaleDateString(t('langCode'), { day: '2-digit', month: 'short' });
 }
 
 let toastTimer;
@@ -58,7 +71,7 @@ function render() {
       )
     : items;
 
-  countEl.textContent = `${items.length} видео`;
+  countEl.textContent = t(items.length === 1 ? 'videoCountOne' : 'videoCountMany', String(items.length));
   filterWrap.hidden = items.length < 7;
   emptyEl.hidden = items.length > 0;
 
@@ -97,8 +110,8 @@ function render() {
     del.className = 'del';
     del.type = 'button';
     del.textContent = '×';
-    del.title = 'Убрать из стопки';
-    del.setAttribute('aria-label', `Убрать «${item.title}»`);
+    del.title = t('removeFromStack');
+    del.setAttribute('aria-label', t('removeItem', item.title));
     del.addEventListener('click', async () => {
       const было = items;
       items = items.filter((x) => x.id !== item.id);
@@ -107,10 +120,10 @@ function render() {
       if (ошибка) {
         items = было;
         render();
-        toast('Хранилище отказало: ' + ошибка);
+        toast(t('storageFailed', ошибка));
         return;
       }
-      toast('Убрано');
+      toast(t('removed'));
     });
 
     li.append(idx, img, meta, del);
@@ -120,7 +133,7 @@ function render() {
   if (query && visible.length === 0) {
     const li = document.createElement('li');
     li.className = 'empty';
-    li.textContent = 'Ничего не нашлось';
+    li.textContent = t('nothingFound');
     listEl.append(li);
   }
 }
@@ -143,9 +156,9 @@ async function copyText(text) {
 }
 
 $('copy').addEventListener('click', async () => {
-  if (!items.length) return toast('Список пуст');
+  if (!items.length) return toast(t('listEmpty'));
   const ok = await copyText(items.map((x) => x.url).join('\n'));
-  toast(ok ? `Скопировано ссылок: ${items.length}` : 'Не удалось скопировать');
+  toast(ok ? t('copiedLinks', String(items.length)) : t('copyFailed'));
 });
 
 /* Подтверждение в два нажатия, а не через confirm():
@@ -164,7 +177,7 @@ function disarmClear() {
 clearBtn.addEventListener('click', async () => {
   if (!items.length) return;
   if (!clearArmed) {
-    clearBtn.textContent = 'Точно очистить?';
+    clearBtn.textContent = t('confirmClear');
     clearBtn.classList.add('is-armed');
     clearArmed = setTimeout(disarmClear, 4000);
     return;
@@ -186,10 +199,10 @@ clearBtn.addEventListener('click', async () => {
   if (осталось.length) {
     items = было;
     render();
-    toast(ошибка ? 'Хранилище отказало: ' + ошибка : 'Очистить не вышло, попробуй ещё раз');
+    toast(ошибка ? t('storageFailed', ошибка) : t('clearFailed'));
     return;
   }
-  toast('Стопка пуста');
+  toast(t('cleared'));
 });
 
 document.addEventListener('click', (e) => {

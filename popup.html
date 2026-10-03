@@ -1,29 +1,33 @@
 <!doctype html>
-<html lang="ru">
+<html lang="en">
   <head>
     <meta charset="utf-8" />
     <link rel="stylesheet" href="popup.css" />
-    <title>Стопка</title>
+    <title data-i18n="extName">Stopka</title>
   </head>
   <body>
+    <!-- Текст здесь — английский по умолчанию; popup.js заменяет его строками
+         из _locales по атрибутам data-i18n и data-i18n-placeholder. -->
     <header class="head">
-      <p class="eyebrow">Стопка</p>
+      <p class="eyebrow" data-i18n="extName">Stopka</p>
       <p class="count"><span class="mark" id="count">—</span></p>
     </header>
 
     <div class="bar">
-      <button type="button" id="copy" class="btn">Скопировать ссылки</button>
-      <button type="button" id="clear" class="btn btn-quiet">Очистить</button>
+      <button type="button" id="copy" class="btn" data-i18n="copyLinks">Copy links</button>
+      <button type="button" id="clear" class="btn btn-quiet" data-i18n="clear">Clear</button>
     </div>
 
     <label class="filter" id="filter-wrap" hidden>
-      <input type="search" id="filter" placeholder="Поиск по названию" autocomplete="off" />
+      <input type="search" id="filter" data-i18n-placeholder="searchPlaceholder"
+             placeholder="Search by title" autocomplete="off" />
     </label>
 
     <ol class="list" id="list"></ol>
 
     <p class="empty" id="empty" hidden>
-      Пусто. Нажми <b>＋</b> в углу превью видео на YouTube — оно окажется здесь.
+      <span data-i18n="emptyBefore">Empty. Click</span> <b>＋</b>
+      <span data-i18n="emptyAfter">in the corner of a YouTube video thumbnail and it will show up here.</span>
     </p>
 
     <p class="toast" id="toast" role="status" aria-live="polite"></p>

@@ -1,0 +1,119 @@
+{
+  "langCode": {
+    "message": "ru",
+    "description": "Code of this locale, used for date formatting and <html lang>"
+  },
+  "extName": {
+    "message": "Стопка",
+    "description": "Extension name"
+  },
+  "extDescription": {
+    "message": "Отмечай видео на YouTube одним нажатием и забирай весь список ссылок разом.",
+    "description": "Extension description in the browser's extension list"
+  },
+  "addToStack": {
+    "message": "Отложить в стопку",
+    "description": "Tooltip of the ＋ button when the video is not saved"
+  },
+  "removeFromStack": {
+    "message": "Убрать из стопки",
+    "description": "Tooltip of the button when the video is saved; also the × in the list"
+  },
+  "untitledVideo": {
+    "message": "Видео без названия",
+    "description": "Fallback title when the page has none"
+  },
+  "videoCountOne": {
+    "message": "$COUNT$ видео",
+    "description": "Counter in the popup header, exactly one",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "videoCountMany": {
+    "message": "$COUNT$ видео",
+    "description": "Counter in the popup header, any other number",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "copyLinks": {
+    "message": "Скопировать ссылки",
+    "description": "Button that copies all links"
+  },
+  "clear": {
+    "message": "Очистить",
+    "description": "Button that removes all videos"
+  },
+  "confirmClear": {
+    "message": "Точно очистить?",
+    "description": "Clear button after the first press"
+  },
+  "searchPlaceholder": {
+    "message": "Поиск по названию",
+    "description": "Search field placeholder"
+  },
+  "emptyBefore": {
+    "message": "Пусто. Нажми",
+    "description": "Empty state, text before the ＋ sign"
+  },
+  "emptyAfter": {
+    "message": "в углу превью видео на YouTube — оно окажется здесь.",
+    "description": "Empty state, text after the ＋ sign"
+  },
+  "removeItem": {
+    "message": "Убрать «$TITLE$»",
+    "description": "Accessible label of the × button",
+    "placeholders": {
+      "title": {
+        "content": "$1"
+      }
+    }
+  },
+  "removed": {
+    "message": "Убрано",
+    "description": "Toast after removing one video"
+  },
+  "nothingFound": {
+    "message": "Ничего не нашлось",
+    "description": "Search returned no results"
+  },
+  "listEmpty": {
+    "message": "Список пуст",
+    "description": "Toast when copying an empty list"
+  },
+  "copiedLinks": {
+    "message": "Скопировано ссылок: $COUNT$",
+    "description": "Toast after copying",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "copyFailed": {
+    "message": "Не удалось скопировать",
+    "description": "Toast when the clipboard refused"
+  },
+  "cleared": {
+    "message": "Стопка пуста",
+    "description": "Toast after clearing"
+  },
+  "clearFailed": {
+    "message": "Очистить не вышло, попробуй ещё раз",
+    "description": "Toast when clearing did not persist"
+  },
+  "storageFailed": {
+    "message": "Хранилище отказало: $ERROR$",
+    "description": "Toast with the browser's storage error",
+    "placeholders": {
+      "error": {
+        "content": "$1"
+      }
+    }
+  }
+}

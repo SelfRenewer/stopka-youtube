@@ -1,0 +1,3 @@
+/* Имя приложения в Доке, меню и Finder для русской системы. */
+"CFBundleDisplayName" = "Стопка";
+"CFBundleName" = "Стопка";

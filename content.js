@@ -3,6 +3,8 @@
 
 (() => {
   const KEY = 'items';
+  // Строки интерфейса — в _locales/<язык>/messages.json; язык выбирает браузер.
+  const t = (key, ...subs) => chrome.i18n.getMessage(key, subs) || key;
   const MARK = 'data-stopka-ready';
   let savedIds = new Set();
 
@@ -112,7 +114,7 @@
     const title =
       clean(titleEl && (titleEl.getAttribute('title') || titleEl.textContent)) ||
       clean(a.getAttribute('aria-label')) ||
-      'Видео без названия';
+      t('untitledVideo');
     return {
       id,
       url: `https://www.youtube.com/watch?v=${id}`,
@@ -155,7 +157,7 @@
 
   function paint(btn, saved) {
     btn.classList.toggle('is-saved', !!saved);
-    btn.title = saved ? 'Убрать из стопки' : 'Отложить в стопку';
+    btn.title = saved ? t('removeFromStack') : t('addToStack');
     btn.setAttribute('aria-label', btn.title);
   }
 
@@ -222,7 +224,7 @@
       title:
         clean(titleEl && (titleEl.getAttribute('title') || titleEl.textContent)) ||
         clean(document.title.replace(/ - YouTube$/, '')) ||
-        'Видео без названия',
+        t('untitledVideo'),
       channel: clean(chanEl && chanEl.textContent),
       thumb: `https://i.ytimg.com/vi/${id}/mqdefault.jpg`,
       addedAt: Date.now()
