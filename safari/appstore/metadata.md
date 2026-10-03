@@ -52,6 +52,18 @@ Stopka is an independent extension and is not affiliated with YouTube or Google.
 <!-- limit:100 -->
 video,watch later,save,list,links,bookmarks,queue,playlist,extension,stack,collect
 
+## App Review Notes (en)
+<!-- limit:4000 -->
+Stopka is a Safari web extension packaged in a macOS app. No account or sign-in is needed.
+
+To test:
+1. Open the Stopka app once, then go to Safari → Settings → Extensions and turn on Stopka.
+2. Open youtube.com and allow Stopka on this website (click the Stopka icon in the toolbar → Always Allow on This Website).
+3. Every video thumbnail has a ＋ button in its lower-left corner. Click it — it turns into a check mark and the video is saved.
+4. Click the Stopka icon in the Safari toolbar to see the saved list. “Copy links” copies all links; “×” removes one video; “Clear” (press twice) removes all.
+
+The extension only runs on youtube.com, stores the list locally in the extension's storage, and sends no data anywhere. The interface is in English and Russian, following the browser language.
+
 # Русский
 
 ## Название (ru)
