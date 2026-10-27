@@ -54,15 +54,28 @@ video,watch later,save,list,links,bookmarks,queue,playlist,extension,stack,colle
 
 ## App Review Notes (en)
 <!-- limit:4000 -->
-Stopka is a Safari web extension packaged in a macOS app. No account or sign-in is needed.
+1. SCREEN RECORDING
+Attached to our reply in App Review. Recorded on a Mac running macOS 27.0.1: launching Stopka, turning it on in Safari Settings, saving videos on youtube.com with the ＋ button, opening the list, copying links and removing items.
 
-To test:
-1. Open the Stopka app once, then go to Safari → Settings → Extensions and turn on Stopka.
-2. Open youtube.com and allow Stopka on this website (click the Stopka icon in the toolbar → Always Allow on This Website).
-3. Every video thumbnail has a ＋ button in its lower-left corner. Click it — it turns into a check mark and the video is saved.
-4. Click the Stopka icon in the Safari toolbar to see the saved list. “Copy links” copies all links; “×” removes one video; “Clear” (press twice) removes all.
+2. PURPOSE AND AUDIENCE
+Stopka is a Safari web extension for people who browse YouTube and want to set videos aside to watch, share or send later. It adds a ＋ button to every video thumbnail on youtube.com; one click saves the video's link, title and channel to a list. The Stopka toolbar button shows the list: search, copy all links to the clipboard at once, remove one video or clear all.
+It solves a simple problem: collecting a handful of videos into one list of links quickly, without a Google account, playlists or copying URLs one by one. Everything stays on the user's Mac.
 
-The extension only runs on youtube.com, stores the list locally in the extension's storage, and sends no data anywhere. The interface is in English and Russian, following the browser language.
+3. HOW TO SET UP AND USE
+No account, login, sample files or purchases are needed.
+- Open the Stopka app once, then Safari → Settings → Extensions → turn on Stopka.
+- Open youtube.com and allow Stopka on this website (Stopka toolbar button → Always Allow on This Website).
+- Every video thumbnail has a ＋ button in its lower-left corner. Click it — it turns into a check mark and the video is saved.
+- Click the Stopka toolbar button to see the list. “Copy links” copies all links; “×” removes one video; “Clear” (press twice) removes all.
+
+4. EXTERNAL SERVICES
+None. Stopka has no server, account system, analytics, ads, third-party SDKs, AI services or payments. The list is stored locally in the extension's browser storage and is never transmitted. The extension runs only on youtube.com pages the user opens in Safari; it reads the title and channel of a saved video from that page. Thumbnails in the list are loaded by URL from YouTube's public image server (i.ytimg.com), the same images the user already sees on YouTube.
+
+5. REGIONAL DIFFERENCES
+None. The app works the same in all regions. The interface is in English and Russian and follows the browser language.
+
+6. THIRD-PARTY MATERIAL
+Stopka does not include, download, copy or redistribute any third-party content: no video or audio is downloaded or saved, and it does not hide, block or change YouTube's content or ads — it only adds its own ＋ button to thumbnails. It keeps links, titles and thumbnail URLs of videos the user chose, like bookmarks. Stopka is an independent extension, not affiliated with YouTube or Google, and does not operate in a regulated industry.
 
 # Русский
 
