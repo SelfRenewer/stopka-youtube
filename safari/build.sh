@@ -87,7 +87,14 @@ echo "→ Команда: $TEAM_ID, версия $VERSION ($BUILD_NUMBER)"
 #    чистую копию только с файлами расширения.
 STAGE_ROOT="$(mktemp -d)"
 DERIVED="$(mktemp -d)"
-trap 'rm -rf "$STAGE_ROOT" "$DERIVED"' EXIT
+# Приложения из временной папки LaunchServices помнит и после её удаления,
+# и Safari показывает лишнюю «Стопку». Снимаем регистрацию до удаления.
+LSREGISTER=/System/Library/Frameworks/CoreServices.framework/Frameworks/LaunchServices.framework/Support/lsregister
+cleanup() {
+  find "$DERIVED" -name '*.app' -type d -prune -exec "$LSREGISTER" -u {} \; 2>/dev/null || true
+  rm -rf "$STAGE_ROOT" "$DERIVED"
+}
+trap cleanup EXIT
 STAGE="$STAGE_ROOT/stopka"
 mkdir -p "$STAGE"
 for f in "${EXT_FILES[@]}"; do
