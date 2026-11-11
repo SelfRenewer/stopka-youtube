@@ -116,12 +116,32 @@ PROJ="$(find "$PROJECT_DIR" -maxdepth 2 -name '*.xcodeproj' | head -1)"
 APP_SRC="$(dirname "$PROJ")/$APP_NAME"
 echo "→ Проект: $PROJ"
 
+# Xcode 27.2 пишет проект в новом формате: project.xcproj (JSON) вместо
+# project.pbxproj (plist). Правки ниже умеют оба.
+if [ -f "$PROJ/project.pbxproj" ]; then
+  PROJ_FILE="$PROJ/project.pbxproj"
+elif [ -f "$PROJ/project.xcproj" ]; then
+  PROJ_FILE="$PROJ/project.xcproj"
+else
+  echo "В $PROJ нет ни project.pbxproj, ни project.xcproj" >&2; exit 1
+fi
+
 # Конвертер собирает ID приложения из префикса и имени приложения
 # (com.stopka.Stopka, а для кириллицы — com.stopka.------), а ID расширения
 # берёт как есть. Сборка падает на проверке префикса, поэтому ID приложения
 # выставляем явно — всем записям, кроме расширения.
-perl -i -pe 's/(PRODUCT_BUNDLE_IDENTIFIER = )(?!\Q'"$BUNDLE_ID"'.Extension\E;)[^;]+;/$1'"$BUNDLE_ID"';/g' \
-  "$PROJ/project.pbxproj"
+#   pbxproj: PRODUCT_BUNDLE_IDENTIFIER = com.stopka.Stopka;
+#   xcproj:  "PRODUCT_BUNDLE_IDENTIFIER": "com.stopka.Stopka",
+BUNDLE_ID="$BUNDLE_ID" perl -i -pe '
+  my $ext = quotemeta "$ENV{BUNDLE_ID}.Extension";
+  s/(PRODUCT_BUNDLE_IDENTIFIER = )(?!$ext;)[^;]+;/$1$ENV{BUNDLE_ID};/g;
+  s/("PRODUCT_BUNDLE_IDENTIFIER"\s*:\s*")(?!$ext")[^"]+"/$1$ENV{BUNDLE_ID}"/g;
+' "$PROJ_FILE"
+IDS="$(perl -ne 'print "$1\n" while /PRODUCT_BUNDLE_IDENTIFIER"?\s*[=:]\s*"?([^";,\s]+)/g' "$PROJ_FILE" | sort -u)"
+if [ "$IDS" != "$(printf '%s\n%s' "$BUNDLE_ID" "$BUNDLE_ID.Extension")" ]; then
+  echo "ID в проекте не те, ждал $BUNDLE_ID и $BUNDLE_ID.Extension:" >&2
+  echo "$IDS" >&2; exit 1
+fi
 
 # 3. Контейнер: наши файлы поверх сгенерированных — окно на английском
 #    (Base) и русском (ru), ссылка на политику конфиденциальности (App Review
@@ -157,11 +177,16 @@ iconv -f UTF-16 -t UTF-8 "$DERIVED/Main.strings" | APP="$APP_NAME" perl -CSD -Mu
   die "Нет перевода меню для: @miss\n" if @miss;
 ' "$OVERLAY/ru/menu.txt" > "$APP_SRC/ru.lproj/Main.strings"
 
-# Записи о ru-файлах в проекте: localize.pl правит структуру plist,
-# а не текст pbxproj. Xcode читает проект и в XML-виде.
-plutil -convert json -o - "$PROJ/project.pbxproj" \
-  | perl "$OVERLAY/localize.pl" "$APP_NAME" > "$DERIVED/project.json"
-plutil -convert xml1 "$DERIVED/project.json" -o "$PROJ/project.pbxproj"
+# Записи о ru-файлах в проекте: localize.pl правит структуру проекта,
+# а не текст. pbxproj Xcode читает и в XML-виде; xcproj — обычным JSON.
+if [ "${PROJ_FILE##*.}" = pbxproj ]; then
+  plutil -convert json -o - "$PROJ_FILE" \
+    | perl "$OVERLAY/localize.pl" "$APP_NAME" > "$DERIVED/project.json"
+  plutil -convert xml1 "$DERIVED/project.json" -o "$PROJ_FILE"
+else
+  perl "$OVERLAY/localize.pl" "$APP_NAME" < "$PROJ_FILE" > "$DERIVED/project.json"
+  cp "$DERIVED/project.json" "$PROJ_FILE"
+fi
 
 # Категория обязательна для Mac App Store. Шифрования своего нет — флаг
 # избавляет от вопроса про экспортный контроль при каждой отправке.
@@ -186,6 +211,12 @@ SETTINGS=(
   MACOSX_DEPLOYMENT_TARGET="$MIN_MACOS"
   MARKETING_VERSION="$VERSION"
   CURRENT_PROJECT_VERSION="$BUILD_NUMBER"
+  # Шаблон Xcode 27.2 даёт песочнице чтение выбранных пользователем файлов.
+  # Приложению оно не нужно, а лишние права — повод для отказа по 2.4.5(i).
+  # Выход в сеть (network.client) НЕ убирать: без него WKWebView в песочнице
+  # не запускает свои процессы («web process failed to launch» в журнале),
+  # и окно приложения пустое. Проверено 11.11.2026.
+  ENABLE_USER_SELECTED_FILES=
 )
 
 # 4a. App Store: архив → экспорт с подписью Apple Distribution.
