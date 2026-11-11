@@ -4,7 +4,7 @@
   "version": "1.0.0",
   "description": "__MSG_extDescription__",
   "default_locale": "en",
-  "permissions": ["storage", "clipboardWrite"],
+  "permissions": ["storage", "unlimitedStorage", "clipboardWrite"],
   "host_permissions": ["*://*.youtube.com/*"],
   "action": {
     "default_popup": "popup.html",

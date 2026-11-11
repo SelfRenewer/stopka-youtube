@@ -55,7 +55,7 @@ video,watch later,save,list,links,bookmarks,queue,playlist,extension,stack,colle
 ## App Review Notes (en)
 <!-- limit:4000 -->
 1. SCREEN RECORDING
-Attached to our reply in App Review. Recorded on a Mac running macOS 27.0.1: launching Stopka, turning it on in Safari Settings, saving videos on youtube.com with the ＋ button, opening the list, copying links and removing items.
+Attached to our reply in App Review. Recorded on a Mac running macOS 27.2: launching Stopka, turning it on in Safari Settings, saving videos on youtube.com with the ＋ button, opening the list, copying links and removing items.
 
 2. PURPOSE AND AUDIENCE
 Stopka is a Safari web extension for people who browse YouTube and want to set videos aside to watch, share or send later. It adds a ＋ button to every video thumbnail on youtube.com; one click saves the video's link, title and channel to a list. The Stopka toolbar button shows the list: search, copy all links to the clipboard at once, remove one video or clear all.
